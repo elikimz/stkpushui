@@ -1,35 +1,49 @@
-# Pesaflux Payment UI
+# STK Push Payment UI
 
-A minimal React + TypeScript frontend for initiating M-Pesa STK Push payments via [Pesaflux](https://api.pesaflux.co.ke).
+This repository contains a simple React frontend for initiating M-Pesa STK Push payments through the FastAPI backend.
 
-## Setup
+> **Payment flow:** UI → FastAPI backend at `http://localhost:8000/pay` → Pesaflux API → M-Pesa STK Push prompt on the user's phone.
+
+## Features
+
+| Feature | Description |
+| --- | --- |
+| Payment form | Captures phone number and amount. |
+| Phone validation | Requires `2547XXXXXXXX` format before submission. |
+| Loading state | Disables the payment button while the backend request is running. |
+| User guidance | Warns that the M-Pesa prompt may show **PESAFLUX**. |
+| Response handling | Displays the backend/Pesaflux response and reminds the user to enter their M-Pesa PIN. |
+
+## Run locally
 
 ```bash
-cp .env.example .env
-# Edit .env and set VITE_API_BASE_URL to your backend URL
 pnpm install
 pnpm dev
 ```
 
-## Environment Variables
+The UI expects the backend to be running on `http://localhost:8000` by default. To use a different backend URL, create a `.env` file:
 
-| Variable | Description | Default |
-|---|---|---|
-| `VITE_API_BASE_URL` | Backend API base URL | `http://localhost:8000` |
-
-## Features
-
-- Phone number input with automatic format normalisation (07XXXXXXXX → 2547XXXXXXXX)
-- Amount input in KES
-- Loading spinner while request is in flight
-- Success screen showing transaction ID
-- Error display for failed requests
-- Fully responsive, works on mobile
-
-## Build
-
-```bash
-pnpm build
+```env
+VITE_API_BASE_URL=http://localhost:8000
 ```
 
-Output is in `dist/`.
+## Backend request
+
+The payment button sends:
+
+```http
+POST http://localhost:8000/pay
+Content-Type: application/json
+```
+
+```json
+{
+  "amount": "1",
+  "phone": "2547XXXXXXXX",
+  "reference": "Order 1001"
+}
+```
+
+## Important note
+
+Do not attempt to change or hide the name shown in the M-Pesa STK prompt. The **Paying to** name is controlled by Safaricom/Pesaflux, and the UI clearly informs users that the prompt may appear as **PESAFLUX**.
