@@ -1,22 +1,24 @@
 # Dependencies
 node_modules/
+/.pnp
+.pnp.js
 
-# Build output
-dist/
-coverage/
+# Testing
+/coverage
 
-# Environment
+# Production
+/build
+/dist
+
+# Misc
+.DS_Store
 .env
-.env.*
-!.env.example
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-
-# OS / editors
-.DS_Store
-.vscode/
-.idea/

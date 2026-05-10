@@ -1,49 +1,74 @@
-# STK Push Payment UI
+# PesaFlux Payment UI
 
-This repository contains a simple React frontend for initiating M-Pesa STK Push payments through the FastAPI backend.
-
-> **Payment flow:** UI → FastAPI backend at `http://localhost:8000/pay` → Pesaflux API → M-Pesa STK Push prompt on the user's phone.
+A clean React frontend for PesaFlux STK Push payments.
 
 ## Features
 
-| Feature | Description |
-| --- | --- |
-| Payment form | Captures phone number and amount. |
-| Phone validation | Requires `2547XXXXXXXX` format before submission. |
-| Loading state | Disables the payment button while the backend request is running. |
-| User guidance | Warns that the M-Pesa prompt may show **PESAFLUX**. |
-| Response handling | Displays the backend/Pesaflux response and reminds the user to enter their M-Pesa PIN. |
+- ✅ Simple payment form
+- ✅ Real-time validation
+- ✅ Loading states
+- ✅ Error handling
+- ✅ Transaction status display
 
-## Run locally
+## Setup
+
+### 1. Install Dependencies
 
 ```bash
 pnpm install
+```
+
+### 2. Configure Environment
+
+```bash
+cp .env.example .env
+# Edit .env with your backend URL
+```
+
+### 3. Run Development Server
+
+```bash
 pnpm dev
 ```
 
-The UI expects the backend to be running on `http://localhost:8000` by default. To use a different backend URL, create a `.env` file:
+The app will be available at `http://localhost:5173`
 
-```env
-VITE_API_BASE_URL=http://localhost:8000
+## Build for Production
+
+```bash
+pnpm build
 ```
 
-## Backend request
+## API Integration
 
-The payment button sends:
+The frontend communicates with the backend at `http://localhost:8000` (configurable via `VITE_API_URL`).
 
-```http
-POST http://localhost:8000/pay
-Content-Type: application/json
+### Payment Flow
+
+1. User enters phone number and amount
+2. Frontend validates input
+3. Sends POST request to `/api/pay`
+4. Shows loading state
+5. Displays response (success or error)
+6. User checks phone for STK prompt
+
+## Environment Variables
+
+- `VITE_API_URL`: Backend API URL (default: `http://localhost:8000`)
+
+## Project Structure
+
 ```
-
-```json
-{
-  "amount": "1",
-  "phone": "2547XXXXXXXX",
-  "reference": "Order 1001"
-}
+src/
+├── main.tsx          # React entry point
+├── App.tsx           # Main app component
+├── App.css           # Styling
+├── components/
+│   ├── PaymentForm.tsx    # Payment form component
+│   ├── TransactionStatus.tsx  # Status display
+│   └── LoadingSpinner.tsx     # Loading indicator
+├── services/
+│   └── api.ts        # API client
+└── types/
+    └── index.ts      # TypeScript types
 ```
-
-## Important note
-
-Do not attempt to change or hide the name shown in the M-Pesa STK prompt. The **Paying to** name is controlled by Safaricom/Pesaflux, and the UI clearly informs users that the prompt may appear as **PESAFLUX**.
