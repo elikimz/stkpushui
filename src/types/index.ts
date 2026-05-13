@@ -1,7 +1,7 @@
 export interface STKPushRequest {
   phone: string;
   amount: number;
-  reference: string;
+  reference?: string;
 }
 
 export interface STKPushResponse {
