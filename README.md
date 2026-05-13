@@ -1,74 +1,70 @@
-# PesaFlux Payment UI
+# PesaFlux Checkout UI
 
-A clean React frontend for PesaFlux STK Push payments.
+A modern, minimal, and mobile-responsive frontend for initiating M-Pesa STK Push payments via the PesaFlux STK Push API.
 
 ## Features
 
-- ✅ Simple payment form
-- ✅ Real-time validation
-- ✅ Loading states
-- ✅ Error handling
-- ✅ Transaction status display
+- ⚡️ Built with **React 19** and **Vite**
+- 🎨 Styled with **Tailwind CSS**
+- 🛡️ **Lucide React** icons for a professional look
+- 📱 Fully responsive design
+- 🔄 Real-time loading states and feedback
+- 📋 Copy-to-clipboard for transaction references
 
 ## Setup
 
-### 1. Install Dependencies
+### 1. Clone and install dependencies
 
 ```bash
-pnpm install
+git clone https://github.com/elikimz/stkpushui.git
+cd stkpushui
+npm install
 ```
 
-### 2. Configure Environment
+### 2. Configure environment variables
 
 ```bash
 cp .env.example .env
-# Edit .env with your backend URL
+# Set VITE_API_URL to your backend URL
+# Example: VITE_API_URL=https://your-api.azurewebsites.net
 ```
 
-### 3. Run Development Server
+### 3. Run for development
 
 ```bash
-pnpm dev
+npm run dev
 ```
 
-The app will be available at `http://localhost:5173`
-
-## Build for Production
+### 4. Build for production
 
 ```bash
-pnpm build
+npm run build
 ```
-
-## API Integration
-
-The frontend communicates with the backend at `http://localhost:8000` (configurable via `VITE_API_URL`).
-
-### Payment Flow
-
-1. User enters phone number and amount
-2. Frontend validates input
-3. Sends POST request to `/api/pay`
-4. Shows loading state
-5. Displays response (success or error)
-6. User checks phone for STK prompt
-
-## Environment Variables
-
-- `VITE_API_URL`: Backend API URL (default: `http://localhost:8000`)
 
 ## Project Structure
 
 ```
-src/
-├── main.tsx          # React entry point
-├── App.tsx           # Main app component
-├── App.css           # Styling
-├── components/
-│   ├── PaymentForm.tsx    # Payment form component
-│   ├── TransactionStatus.tsx  # Status display
-│   └── LoadingSpinner.tsx     # Loading indicator
-├── services/
-│   └── api.ts        # API client
-└── types/
-    └── index.ts      # TypeScript types
+stkpushui/
+├── src/
+│   ├── components/
+│   │   ├── PaymentForm.tsx        # Payment input form
+│   │   └── TransactionStatus.tsx  # Success/Error feedback
+│   ├── services/
+│   │   └── api.ts                 # Axios API client
+│   ├── types/
+│   │   └── index.ts               # TypeScript interfaces
+│   ├── App.tsx                    # Main layout and logic
+│   ├── App.css                    # Tailwind directives
+│   └── main.tsx                   # React entry point
+├── tailwind.config.js
+├── postcss.config.js
+└── index.html
 ```
+
+## Tech Stack
+
+- **Framework**: [React](https://react.dev/)
+- **Build Tool**: [Vite](https://vitejs.dev/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **HTTP Client**: [Axios](https://axios-http.com/)

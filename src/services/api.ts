@@ -1,41 +1,18 @@
-import axios, { AxiosInstance } from 'axios'
-import { PaymentRequest, PaymentResponse, TransactionStatus } from '../types'
+import axios from 'axios';
+import { STKPushRequest, STKPushResponse } from '../types';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API_URL = import.meta.env.VITE_API_URL || 'https://pesafluxapi-a5dfaaa8h7ebhrfv.southafricanorth-01.azurewebsites.net';
 
-class ApiClient {
-  private client: AxiosInstance
+const api = axios.create({
+  baseURL: API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
-  constructor() {
-    this.client = axios.create({
-      baseURL: API_URL,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-  }
+export const initiateSTKPush = async (data: STKPushRequest): Promise<STKPushResponse> => {
+  const response = await api.post<STKPushResponse>('/api/payments/stk-push', data);
+  return response.data;
+};
 
-  async initiatePayment(data: PaymentRequest): Promise<PaymentResponse> {
-    const response = await this.client.post<PaymentResponse>('/api/pay', data)
-    return response.data
-  }
-
-  async getTransaction(reference: string): Promise<TransactionStatus> {
-    const response = await this.client.get<TransactionStatus>(
-      `/api/transactions/${reference}`
-    )
-    return response.data
-  }
-
-  async listTransactions(skip: number = 0, limit: number = 100) {
-    const response = await this.client.get<TransactionStatus[]>(
-      '/api/transactions',
-      {
-        params: { skip, limit },
-      }
-    )
-    return response.data
-  }
-}
-
-export default new ApiClient()
+export default api;

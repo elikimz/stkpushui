@@ -1,27 +1,16 @@
-export interface PaymentRequest {
-  phone: string
-  amount: number
+export interface STKPushRequest {
+  phone: string;
+  amount: number;
+  reference: string;
 }
 
-export interface PaymentResponse {
-  status: string
-  message: string
-  reference: string
-  data?: Record<string, unknown>
-}
-
-export interface TransactionStatus {
-  id: number
-  phone: string
-  amount: number
-  reference: string
-  status: string
-  created_at: string
-  updated_at: string
+export interface STKPushResponse {
+  status: string;
+  message: string;
+  reference: string;
+  data?: any;
 }
 
 export interface ApiError {
-  status: string
-  message: string
-  error_code?: string
+  detail: string | Array<{ msg: string; loc: any[] }>;
 }
