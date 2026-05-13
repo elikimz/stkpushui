@@ -1,23 +1,54 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { PaymentForm } from './components/PaymentForm';
 import { TransactionStatus } from './components/TransactionStatus';
-import { initiateSTKPush } from './services/api';
-import { STKPushRequest, STKPushResponse } from './types';
+import { initiateSTKPush, checkPaymentStatus } from './services/api';
+import { STKPushRequest, STKPushResponse, PaymentStatusResponse } from './types';
 import { ShieldCheck, Globe, Lock } from 'lucide-react';
 
 const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [response, setResponse] = useState<STKPushResponse | null>(null);
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatusResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const startPolling = (reference: string) => {
+    // Clear any existing polling
+    if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
+
+    pollingIntervalRef.current = setInterval(async () => {
+      try {
+        const status = await checkPaymentStatus(reference);
+        setPaymentStatus(status);
+
+        // Stop polling if completed, failed, or timed out
+        if (status.status !== 'pending') {
+          if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
+        }
+      } catch (err) {
+        console.error('Polling Error:', err);
+      }
+    }, 3000); // Poll every 3 seconds
+  };
+
+  useEffect(() => {
+    return () => {
+      if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
+    };
+  }, []);
 
   const handlePayment = async (data: STKPushRequest) => {
     setIsLoading(true);
     setError(null);
     setResponse(null);
+    setPaymentStatus(null);
 
     try {
       const result = await initiateSTKPush(data);
       setResponse(result);
+      // Start polling for actual payment status after STK is sent
+      startPolling(result.reference);
     } catch (err: any) {
       console.error('Payment Error:', err);
       const message = err.response?.data?.detail 
@@ -31,14 +62,12 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 md:p-8 bg-[#F9FAFB]">
-      {/* Background decoration */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-500/5 blur-[120px]" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-pink-500/5 blur-[120px]" />
       </div>
 
       <div className="w-full max-w-[500px] animate-in relative">
-        {/* Top Branding */}
         <div className="flex items-center justify-between mb-8 px-2">
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 rounded-lg premium-gradient flex items-center justify-center shadow-lg">
@@ -52,9 +81,7 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        {/* Main Checkout Card */}
         <div className="bg-white rounded-[2rem] checkout-card overflow-hidden">
-          {/* Visual Banner */}
           <div className="h-32 premium-gradient relative overflow-hidden">
             <div className="absolute inset-0 opacity-20">
               <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -68,11 +95,27 @@ const App: React.FC = () => {
           </div>
 
           <div className="p-8 sm:p-10">
-            <PaymentForm onSubmit={handlePayment} isLoading={isLoading} />
-            <TransactionStatus response={response} error={error} />
+            {/* Show form only if not waiting for PIN or if payment failed/timed out */}
+            {(!response || (paymentStatus && (paymentStatus.status === 'failed' || paymentStatus.status === 'timeout'))) ? (
+              <PaymentForm onSubmit={handlePayment} isLoading={isLoading} />
+            ) : (
+              <div className="text-center py-4">
+                <button 
+                  onClick={() => { setResponse(null); setPaymentStatus(null); }}
+                  className="text-xs font-bold text-indigo-600 hover:text-indigo-800 underline mb-4"
+                >
+                  &larr; Start Over
+                </button>
+              </div>
+            )}
+            
+            <TransactionStatus 
+              response={response} 
+              error={error} 
+              paymentStatus={paymentStatus}
+            />
           </div>
 
-          {/* Trust Footer */}
           <div className="bg-slate-50/80 px-10 py-6 border-t border-slate-100 flex flex-col items-center space-y-4">
             <div className="flex items-center space-x-6 grayscale opacity-50">
               <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-3" />
@@ -86,7 +129,6 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        {/* External Footer */}
         <div className="mt-8 text-center">
           <p className="text-slate-400 text-[11px] font-medium">
             By paying, you agree to our <a href="#" className="underline hover:text-slate-600">Terms of Service</a>. 

@@ -11,6 +11,12 @@ export interface STKPushResponse {
   data?: any;
 }
 
+export interface PaymentStatusResponse {
+  status: 'pending' | 'completed' | 'failed' | 'timeout';
+  message: string;
+  reference: string;
+}
+
 export interface ApiError {
   detail: string | Array<{ msg: string; loc: any[] }>;
 }
