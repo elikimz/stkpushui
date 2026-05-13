@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { STKPushRequest, STKPushResponse, PaymentStatusResponse } from '../types';
+import { STKPushRequest, STKPushResponse } from '../types';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://pesafluxapi-a5dfaaa8h7ebhrfv.southafricanorth-01.azurewebsites.net';
 
@@ -12,11 +12,6 @@ const api = axios.create({
 
 export const initiateSTKPush = async (data: STKPushRequest): Promise<STKPushResponse> => {
   const response = await api.post<STKPushResponse>('/api/payments/stk-push', data);
-  return response.data;
-};
-
-export const checkPaymentStatus = async (reference: string): Promise<PaymentStatusResponse> => {
-  const response = await api.get<PaymentStatusResponse>(`/api/payments/status/${reference}`);
   return response.data;
 };
 

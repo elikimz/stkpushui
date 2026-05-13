@@ -1,54 +1,23 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { PaymentForm } from './components/PaymentForm';
 import { TransactionStatus } from './components/TransactionStatus';
-import { initiateSTKPush, checkPaymentStatus } from './services/api';
-import { STKPushRequest, STKPushResponse, PaymentStatusResponse } from './types';
+import { initiateSTKPush } from './services/api';
+import { STKPushRequest, STKPushResponse } from './types';
 import { ShieldCheck, Globe, Lock } from 'lucide-react';
 
 const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [response, setResponse] = useState<STKPushResponse | null>(null);
-  const [paymentStatus, setPaymentStatus] = useState<PaymentStatusResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  
-  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  const startPolling = (reference: string) => {
-    // Clear any existing polling
-    if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
-
-    pollingIntervalRef.current = setInterval(async () => {
-      try {
-        const status = await checkPaymentStatus(reference);
-        setPaymentStatus(status);
-
-        // Stop polling if completed, failed, or timed out
-        if (status.status !== 'pending') {
-          if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
-        }
-      } catch (err) {
-        console.error('Polling Error:', err);
-      }
-    }, 3000); // Poll every 3 seconds
-  };
-
-  useEffect(() => {
-    return () => {
-      if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
-    };
-  }, []);
 
   const handlePayment = async (data: STKPushRequest) => {
     setIsLoading(true);
     setError(null);
     setResponse(null);
-    setPaymentStatus(null);
 
     try {
       const result = await initiateSTKPush(data);
       setResponse(result);
-      // Start polling for actual payment status after STK is sent
-      startPolling(result.reference);
     } catch (err: any) {
       console.error('Payment Error:', err);
       const message = err.response?.data?.detail 
@@ -95,25 +64,8 @@ const App: React.FC = () => {
           </div>
 
           <div className="p-8 sm:p-10">
-            {/* Show form only if not waiting for PIN or if payment failed/timed out */}
-            {(!response || (paymentStatus && (paymentStatus.status === 'failed' || paymentStatus.status === 'timeout'))) ? (
-              <PaymentForm onSubmit={handlePayment} isLoading={isLoading} />
-            ) : (
-              <div className="text-center py-4">
-                <button 
-                  onClick={() => { setResponse(null); setPaymentStatus(null); }}
-                  className="text-xs font-bold text-indigo-600 hover:text-indigo-800 underline mb-4"
-                >
-                  &larr; Start Over
-                </button>
-              </div>
-            )}
-            
-            <TransactionStatus 
-              response={response} 
-              error={error} 
-              paymentStatus={paymentStatus}
-            />
+            <PaymentForm onSubmit={handlePayment} isLoading={isLoading} />
+            <TransactionStatus response={response} error={error} />
           </div>
 
           <div className="bg-slate-50/80 px-10 py-6 border-t border-slate-100 flex flex-col items-center space-y-4">
